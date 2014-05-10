@@ -156,6 +156,10 @@ void AlgBranchAndBound::ejecutarAlgoritmo() {
 
 void AlgBranchAndBound::expandir (Nodo* nodo) {
 
+	int maqOcupadas = nodo -> contarOcupadas ();
+	while (maqOcupadas < nodo -> getTamSol()) { // Mientras queden máquinas libres ...
+
+	}
 }
 
 void AlgBranchAndBound::seleccionar (Nodo* nodo) {

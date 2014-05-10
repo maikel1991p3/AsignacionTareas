@@ -21,6 +21,7 @@ public:
 	friend ostream& operator<< (ostream& os, Nodo*);
 
 	void calcularValor (int** tablaCostes);
+	int contarOcupadas ();
 
 	// Manejadores de atributos
 	int getId();

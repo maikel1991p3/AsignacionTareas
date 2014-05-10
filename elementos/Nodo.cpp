@@ -57,6 +57,15 @@ void Nodo::calcularValor(int** tablaCostes) {
 
 }
 
+int Nodo::contarOcupadas () {
+	int ocupadas = 0;
+	for (int i = 0; i < getTamSol(); ++i){
+		if (getSolucion()[i] != -1)
+			++ocupadas;
+	}
+	return ocupadas;
+}
+
 // Manejadores de atributos
 int Nodo::getId() {
 	return _id;
