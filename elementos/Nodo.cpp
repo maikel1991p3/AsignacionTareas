@@ -53,8 +53,15 @@ ostream& operator<< (ostream& os, Nodo* nodo) {
 }
 
 void Nodo::calcularValor(int** tablaCostes) {
+	// Calculamos valor de la solución hasta ese momento
+	int tareasOcupadas = contarOcupadas(), cota = 0;
+	for (int i = 0; i < tareasOcupadas; ++i) {
+		cota += tablaCostes[i][getSolucion()[i]];
+	}
+	cout << "ID = " << getId() << "     COTA = " << cota << endl;
+	// Miramos cuantas tareas quedan sin máquina por asignar
 
-
+	// Cogemos la mejor máquina para cada tarea en cada caso (aumentando la cota)
 }
 
 int Nodo::contarOcupadas () {

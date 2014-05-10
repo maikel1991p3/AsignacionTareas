@@ -155,6 +155,8 @@ void AlgBranchAndBound::ejecutarAlgoritmo() {
 	} while (true);
 */
 	expandir(actual);
+	actual = actual ->getHijos()[2];
+	expandir (actual);
 }
 
 void AlgBranchAndBound::expandir (Nodo* nodo) {
