@@ -173,7 +173,7 @@ void AlgBranchAndBound::expandir (Nodo* nodo) {
 		int pos = 0;
 		for (int i = 0; i < nodo -> getTamSol(); ++i) {
 			if (libres[i] == true) {
-				pos = libres[i];
+				pos = i;
 				break;
 			}
 		}
@@ -181,6 +181,7 @@ void AlgBranchAndBound::expandir (Nodo* nodo) {
 		temp->getMaquinasLibres()[pos] = false;
 
 		nodo -> getHijos().push_back(temp);
+		_arbolSolucion->insertarNodo(_arbolSolucion->getRefNodos().size(), temp);
 
 		libres[pos] = false;
 		maquinasLibres--;
