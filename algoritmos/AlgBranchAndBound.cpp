@@ -24,9 +24,8 @@ AlgBranchAndBound::AlgBranchAndBound() {
 	_arbolSolucion = new Arbol(_solIni, _dim);
 	delete[] _solIni;
 
+	srand(time (NULL));
 	crearSolucionInicialGRASP();
-
-	_arbolSolucion->mostrar();
 
 	ejecutarAlgoritmo();
 
@@ -91,46 +90,61 @@ void AlgBranchAndBound::leerInstancias() {
 void AlgBranchAndBound::crearSolucionInicialGRASP() {
 	const int TAMLRC = 2;
 	int* maquinasLibres = new int [_dim];
-	int** listaRestCandidatos = new int*[_dim];
-
-	for (int i = 0; i < _dim; ++i)
-		listaRestCandidatos[i] = new int [TAMLRC];
+	int* listaRestCandidatos = NULL;
+	int dentroLista = 0;
 
 	for (int i = 0; i < _dim; ++i)
 		maquinasLibres[i] = i;
 
-	srand(time (NULL));
-	int min = 9999, k = 0, aleatorio = 0;
+	int min = 9999, aleatorio = 0, peorMaquina = 0;
 	for (int i = 0; i < _dim; ++i) { // Para toda tarea ...
 		min = 9999;
-		k = 0;
+		dentroLista = 0;
+		listaRestCandidatos = new int [TAMLRC];
 		for (int j = 0; j < _dim; ++j) { // Para toda máquina ...
 
-			if (maquinasLibres[j] != -1 && _tablaAsignaciones[j][i] < min) {
-				min = _tablaAsignaciones[j][i];
-				listaRestCandidatos[i][k] = j; // Almacenamos las n mejores máquinas para la tarea 'i'
+			if (maquinasLibres[j] != -1) {
 
-				k++;
-				if (k > TAMLRC)
-					k = 0;
+				if (dentroLista < TAMLRC) {
+					listaRestCandidatos[dentroLista] = j; // Almacenamos las n mejores máquinas para la tarea 'i'
+					++dentroLista;
+				} else {
+					// Buscar mejor máquina j para tarea i
+					peorMaquina = buscarPeorLista(listaRestCandidatos);
+					if (_tablaAsignaciones[j][i] < min ) {
+						min = _tablaAsignaciones[j][i];
+						listaRestCandidatos[peorMaquina] = j;
+					}
+				}
 			}
 		}
 
-		aleatorio = rand () % TAMLRC; // elegimos un candidato de la LRC al azar
-		if (listaRestCandidatos[i][aleatorio] < _dim) // Comprobamos que entró el candidato en la lista GRASP
-			_solucionIni[i] = listaRestCandidatos[i][aleatorio];
+		aleatorio = rand () % (TAMLRC - 1); // elegimos un candidato de la LRC al azar
+		if (listaRestCandidatos[aleatorio] < _dim)
+			_solucionIni[i] = listaRestCandidatos[aleatorio];
 		else
-			_solucionIni[i] = listaRestCandidatos[i][0];
+			listaRestCandidatos[0];
 		maquinasLibres[_solucionIni[i]] = -1;
 	}
 
 	cout << endl << " Solución inicial GRASP: " << endl;
 	for (int i = 0; i < _dim; ++i) {
-		cout << "\t" << _solucionIni[i];
+		cout << "\t" << i << "-> " <<_solucionIni[i];
 	}
 	_cota = calcularCota(_solucionIni);
 	_arbolSolucion->getRaiz()->setValorObjetivo(_cota);
 	cout << endl << " Cota = " <<  _cota << endl;
+}
+
+int AlgBranchAndBound::buscarPeorLista (int* lista) {
+	int max = -999, pos = 0;
+	for (unsigned int i = 0; i < 2; ++i) { // FIXME
+		if (_tablaAsignaciones[i][lista[i]] > max) {
+			max = _tablaAsignaciones[i][lista[i]];
+			pos = i;
+		}
+	}
+	return pos;
 }
 
 int AlgBranchAndBound::calcularCota (int* sol) {
@@ -153,7 +167,7 @@ void AlgBranchAndBound::ejecutarAlgoritmo() {
 
 
 	} while (true);
-*/
+	 */
 	expandir(actual);
 	actual = actual ->getHijos()[2];
 	expandir (actual);

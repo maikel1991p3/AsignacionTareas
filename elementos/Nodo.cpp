@@ -28,6 +28,9 @@ Nodo::~Nodo() {
 			delete getHijos()[i];
 		}
 	}
+	if (getMaquinasLibres() != NULL) {
+		delete [] getMaquinasLibres();
+	}
 	setId(-1);
 	setValorObjetivo(-1);
 }

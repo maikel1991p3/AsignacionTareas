@@ -20,6 +20,7 @@ public:
 	// Inicialización
 	void leerInstancias ();
 	void crearSolucionInicialGRASP ();
+	int buscarPeorLista (int* lista);
 	int calcularCota (int* sol);
 
 	// Algoritmo Ramificación y Poda
