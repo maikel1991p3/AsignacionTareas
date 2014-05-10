@@ -120,5 +120,8 @@ bool* Nodo::getMaquinasLibres() {
 }
 
 void Nodo::setMaquinasLibres(bool* maquinasLibres) {
-	_maquinasLibres = maquinasLibres;
+	if (_maquinasLibres == NULL)
+		_maquinasLibres = new bool [getTamSol()];
+	for (int i = 0; i < getTamSol(); ++i)
+		_maquinasLibres[i] = maquinasLibres[i];
 }

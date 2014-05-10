@@ -26,6 +26,7 @@ public:
 	void ejecutarAlgoritmo ();
 	void expandir (Nodo*);
 	void seleccionar (Nodo*);
+	int contar (bool*);
 
 private:
 	int _cota;					// Cota esencial para la poda en el árbol de soluciones

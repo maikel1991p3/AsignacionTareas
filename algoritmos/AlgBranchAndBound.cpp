@@ -29,6 +29,9 @@ AlgBranchAndBound::AlgBranchAndBound() {
 	_arbolSolucion->mostrar();
 
 	ejecutarAlgoritmo();
+
+
+	_arbolSolucion->mostrar();
 }
 
 AlgBranchAndBound::~AlgBranchAndBound() {
@@ -156,12 +159,45 @@ void AlgBranchAndBound::ejecutarAlgoritmo() {
 
 void AlgBranchAndBound::expandir (Nodo* nodo) {
 
-	int maqOcupadas = nodo -> contarOcupadas ();
-	while (maqOcupadas < nodo -> getTamSol()) { // Mientras queden máquinas libres ...
+	int tareasOcupadas = nodo -> contarOcupadas ();
+	int maquinasLibres = nodo -> getTamSol() - tareasOcupadas;
+	bool* libres = new bool [nodo -> getTamSol()];
+	for (int i = 0; i < nodo -> getTamSol(); ++i)
+		libres[i] = nodo -> getMaquinasLibres()[i];
 
+	while (maquinasLibres > 0) {
+		Nodo* temp = new Nodo (_arbolSolucion->getRefNodos().size(), nodo -> getSolucion(), nodo -> getTamSol());
+		temp -> setRefPadre(nodo);
+		temp -> setMaquinasLibres(nodo -> getMaquinasLibres());
+
+		int pos = 0;
+		for (int i = 0; i < nodo -> getTamSol(); ++i) {
+			if (libres[i] == true) {
+				pos = libres[i];
+				break;
+			}
+		}
+		temp->getSolucion()[tareasOcupadas] = pos;
+		temp->getMaquinasLibres()[pos] = false;
+
+		nodo -> getHijos().push_back(temp);
+
+		libres[pos] = false;
+		maquinasLibres--;
+		//delete temp;
 	}
+
 }
 
 void AlgBranchAndBound::seleccionar (Nodo* nodo) {
 
+}
+
+int AlgBranchAndBound::contar (bool* maquinasLibres) {
+	int libres = 0;
+	for (int i = 0; i < _arbolSolucion->getRaiz()->getTamSol(); ++i){
+		if (maquinasLibres[i] == true)
+			++libres;
+	}
+	return libres;
 }
