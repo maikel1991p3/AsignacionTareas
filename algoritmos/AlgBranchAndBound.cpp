@@ -96,35 +96,40 @@ void AlgBranchAndBound::crearSolucionInicialGRASP() {
 	for (int i = 0; i < _dim; ++i)
 		maquinasLibres[i] = i;
 
-	int min = 9999, aleatorio = 0, peorMaquina = 0;
+	int aleatorio = 0, peorMaquina = 0;
 	for (int i = 0; i < _dim; ++i) { // Para toda tarea ...
-		min = 9999;
 		dentroLista = 0;
 		listaRestCandidatos = new int [TAMLRC];
 		for (int j = 0; j < _dim; ++j) { // Para toda máquina ...
 
 			if (maquinasLibres[j] != -1) {
 
-				if (dentroLista < TAMLRC) {
+				if (dentroLista < TAMLRC) { // Mientras la lista no esté llena ... entran las máquinas
 					listaRestCandidatos[dentroLista] = j; // Almacenamos las n mejores máquinas para la tarea 'i'
 					++dentroLista;
+
+					if (contar(maquinasLibres) == 1) { // Controlamos la útima iteración (solo queda 1 máquina)
+						for (int l = 0; l < TAMLRC; ++l)
+							listaRestCandidatos[l] = j;
+						++dentroLista;
+					}
+
 				} else {
-					// Buscar mejor máquina j para tarea i
-					peorMaquina = buscarPeorLista(listaRestCandidatos);
-					if (_tablaAsignaciones[j][i] < min ) {
-						min = _tablaAsignaciones[j][i];
+					// Buscar peor máquina j para tarea i
+					peorMaquina = buscarPeorLista(listaRestCandidatos, TAMLRC, i);
+					if (_tablaAsignaciones[j][i] < _tablaAsignaciones[listaRestCandidatos[peorMaquina]][i]) {
 						listaRestCandidatos[peorMaquina] = j;
+
 					}
 				}
 			}
 		}
 
-		aleatorio = rand () % (TAMLRC - 1); // elegimos un candidato de la LRC al azar
-		if (listaRestCandidatos[aleatorio] < _dim)
-			_solucionIni[i] = listaRestCandidatos[aleatorio];
-		else
-			listaRestCandidatos[0];
+		aleatorio = rand () % TAMLRC; // elegimos un candidato de la LRC al azar
+		_solucionIni[i] = listaRestCandidatos[aleatorio];
 		maquinasLibres[_solucionIni[i]] = -1;
+
+		delete [] listaRestCandidatos;
 	}
 
 	cout << endl << " Solución inicial GRASP: " << endl;
@@ -134,13 +139,15 @@ void AlgBranchAndBound::crearSolucionInicialGRASP() {
 	_cota = calcularCota(_solucionIni);
 	_arbolSolucion->getRaiz()->setValorObjetivo(_cota);
 	cout << endl << " Cota = " <<  _cota << endl;
+
+	delete [] maquinasLibres;
 }
 
-int AlgBranchAndBound::buscarPeorLista (int* lista) {
-	int max = -999, pos = 0;
-	for (unsigned int i = 0; i < 2; ++i) { // FIXME
-		if (_tablaAsignaciones[i][lista[i]] > max) {
-			max = _tablaAsignaciones[i][lista[i]];
+int AlgBranchAndBound::buscarPeorLista (int* lista, int tamLista, int tarea) {
+	int max = -999, pos = -1;
+	for (unsigned int i = 0; i < tamLista; ++i) { // FIXME
+		if (_tablaAsignaciones[lista[i]][tarea] > max) {
+			max = _tablaAsignaciones[lista[i]][tarea];
 			pos = i;
 		}
 	}
@@ -169,8 +176,9 @@ void AlgBranchAndBound::ejecutarAlgoritmo() {
 	} while (true);
 	 */
 	expandir(actual);
-	actual = actual ->getHijos()[2];
+	actual = seleccionar(actual);
 	expandir (actual);
+	//actual->calcularValor(_tablaAsignaciones);
 }
 
 void AlgBranchAndBound::expandir (Nodo* nodo) {
@@ -181,8 +189,9 @@ void AlgBranchAndBound::expandir (Nodo* nodo) {
 	for (int i = 0; i < nodo -> getTamSol(); ++i)
 		libres[i] = nodo -> getMaquinasLibres()[i];
 
+	Nodo* temp = NULL;
 	while (maquinasLibres > 0) {
-		Nodo* temp = new Nodo (_arbolSolucion->getRefNodos().size(), nodo -> getSolucion(), nodo -> getTamSol());
+		temp = new Nodo (_arbolSolucion->getRefNodos().size(), nodo -> getSolucion(), nodo -> getTamSol());
 		temp -> setRefPadre(nodo);
 		temp -> setMaquinasLibres(nodo -> getMaquinasLibres());
 
@@ -196,24 +205,34 @@ void AlgBranchAndBound::expandir (Nodo* nodo) {
 		temp->getSolucion()[tareasOcupadas] = pos;
 		temp->getMaquinasLibres()[pos] = false;
 
+		temp -> calcularValor(_tablaAsignaciones);
+
 		nodo -> getHijos().push_back(temp);
 		_arbolSolucion->insertarNodo(_arbolSolucion->getRefNodos().size(), temp);
 
 		libres[pos] = false;
 		maquinasLibres--;
-		//delete temp;
 	}
 
 }
 
-void AlgBranchAndBound::seleccionar (Nodo* nodo) {
-
+Nodo* AlgBranchAndBound::seleccionar (Nodo* nodo) {
+	unsigned int nhijos = nodo -> getHijos().size();
+	int min = 9999, pos = 0, valorObjetivo = 0;
+	for (unsigned int i = 0; i < nhijos; ++i) {
+		valorObjetivo = nodo->getHijos()[i]->getValorObjetivo();
+		if (valorObjetivo < min) {
+			min = valorObjetivo;
+			pos = i;
+		}
+	}
+	return nodo->getHijos()[pos];
 }
 
-int AlgBranchAndBound::contar (bool* maquinasLibres) {
+int AlgBranchAndBound::contar (int* maquinasLibres) {
 	int libres = 0;
 	for (int i = 0; i < _arbolSolucion->getRaiz()->getTamSol(); ++i){
-		if (maquinasLibres[i] == true)
+		if (maquinasLibres[i] != -1)
 			++libres;
 	}
 	return libres;

@@ -20,14 +20,14 @@ public:
 	// Inicialización
 	void leerInstancias ();
 	void crearSolucionInicialGRASP ();
-	int buscarPeorLista (int* lista);
+	int buscarPeorLista (int* lista, int tamLista, int tarea);
 	int calcularCota (int* sol);
 
 	// Algoritmo Ramificación y Poda
 	void ejecutarAlgoritmo ();
 	void expandir (Nodo*);
-	void seleccionar (Nodo*);
-	int contar (bool*);
+	Nodo* seleccionar (Nodo*);
+	int contar (int*);
 
 private:
 	int _cota;					// Cota esencial para la poda en el árbol de soluciones

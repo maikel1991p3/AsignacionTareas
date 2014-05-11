@@ -57,23 +57,56 @@ ostream& operator<< (ostream& os, Nodo* nodo) {
 
 void Nodo::calcularValor(int** tablaCostes) {
 	// Calculamos valor de la solución hasta ese momento
-	int tareasOcupadas = contarOcupadas(), cota = 0;
-	for (int i = 0; i < tareasOcupadas; ++i) {
-		cota += tablaCostes[i][getSolucion()[i]];
+	int tareasOcupadas = 0, cota = 0;
+	bool* maqLibresTemp = new bool[getTamSol()];
+	int* solFutura = new int[getTamSol()];
+	for (int i = 0; i < getTamSol(); ++i) {
+		if (getSolucion()[i] != -1) {
+			cota += tablaCostes[getSolucion()[i]][i];
+		}
+		solFutura[i] = getSolucion()[i];
+		maqLibresTemp[i] = getMaquinasLibres()[i];
 	}
-	cout << "ID = " << getId() << "     COTA = " << cota << endl;
 	// Miramos cuantas tareas quedan sin máquina por asignar
+	tareasOcupadas =  contarOcupadas();
 
 	// Cogemos la mejor máquina para cada tarea en cada caso (aumentando la cota)
+	int min = 9999, mejorMaq = 0;
+	for (int i = tareasOcupadas; i < getTamSol(); ++i) {
+		min = 9999; mejorMaq = 0;
+		for (int j = 0; j < getTamSol(); ++j) {
+			if (maqLibresTemp[j] == true) {
+				if (tablaCostes[j][i] < min) {
+					min = tablaCostes[j][i];
+					mejorMaq = j;
+				}
+			}
+		}
+		solFutura[i] = mejorMaq;
+		cota += tablaCostes[solFutura[i]][i];
+		maqLibresTemp[mejorMaq] = false;
+	}
+
+	cout << endl << endl << " SOL FUT: "<< endl;
+	for (int i = 0; i < getTamSol(); ++i)
+		cout << "  " << solFutura[i];
+	cout << endl;
+	setValorObjetivo(cota);
+	delete [] solFutura;
+	cout << "ID = " << getId() << "     COTA = " << cota << endl;
 }
 
 int Nodo::contarOcupadas () {
 	int ocupadas = 0;
 	for (int i = 0; i < getTamSol(); ++i){
-		if (getSolucion()[i] != -1)
+		if (getMaquinasLibres()[i] == false)
 			++ocupadas;
 	}
 	return ocupadas;
+}
+
+bool Nodo::esHoja () {
+	return (getHijos().size() == 0) ? true : false;
 }
 
 // Manejadores de atributos
@@ -134,4 +167,12 @@ void Nodo::setMaquinasLibres(bool* maquinasLibres) {
 		_maquinasLibres = new bool [getTamSol()];
 	for (int i = 0; i < getTamSol(); ++i)
 		_maquinasLibres[i] = maquinasLibres[i];
+}
+
+bool Nodo::isPodado() {
+	return _podado;
+}
+
+void Nodo::setPodado(bool podado) {
+	_podado = podado;
 }

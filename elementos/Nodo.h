@@ -20,8 +20,10 @@ public:
 
 	friend ostream& operator<< (ostream& os, Nodo*);
 
+	// Funciones de utilidad
 	void calcularValor (int** tablaCostes);
 	int contarOcupadas ();
+	bool esHoja ();
 
 	// Manejadores de atributos
 	int getId();
@@ -38,6 +40,8 @@ public:
 	void setHijos(vector<Nodo*>& hijos);
 	bool* getMaquinasLibres();
 	void setMaquinasLibres(bool* maquinasLibres);
+	bool isPodado();
+	void setPodado(bool podado);
 
 private:
 	int _id;				// Identoficador único para cada nodo.
@@ -46,7 +50,8 @@ private:
 	int _tamSol; 			// Tamaño de la solución (nº de máquinas / tareas)
 	int _valorObjetivo;		// Valor objetivo de la solución del nodo.1
 	Nodo* _refPadre;		// Referencia al nodo padre (para recorrido del árbol).
-	vector<Nodo*> _hijos;			// Vector de hijos (soluciones vecinas).
+	vector<Nodo*> _hijos;	// Vector de hijos (soluciones vecinas).
+	bool _podado;			// Indica si el nodo en cuestión ha sido podado
 };
 
 #endif /* NODO_H_ */
